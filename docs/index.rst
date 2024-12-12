@@ -27,7 +27,7 @@ In addition, we provide a number of tutorials that cover common challenges in re
    lpc/faq
 
 .. toctree:: 
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Python Utilities 
 
    python-utils/profiling
