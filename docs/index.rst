@@ -7,7 +7,7 @@ research projects.
 In addition, we provide a number of tutorials that cover common challenges in research. 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Princeton Research Clusters
 
    cluster-utils/ionic
