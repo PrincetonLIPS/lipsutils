@@ -20,18 +20,21 @@ Below I show an example of the usage of this utility and its output.
 .. code-block:: console 
 
    $ python3 -m lipsutils.ionic_info 
-   $ HOSTNAMES STATE     FREE_MEM     CPUS     CORES    GRES_USED                   CPUS(A/I/O/T)
-      node012   mixed     261192      64       16       gpu:rtx_2080:1(IDX:0)       32/32/0/64
-      node009   mixed     338276      64       16       gpu:rtx_2080:1(IDX:0)       2/62/0/64
-      node015   mixed     47038       64       16       gpu:rtx_2080:8(IDX:0-7)     32/32/0/64
-      node010   idle      332067      64       16       gpu:rtx_2080:0(IDX:N/A)     0/64/0/64
-      node011   idle      357557      64       16       gpu:rtx_2080:0(IDX:N/A)     0/64/0/64
-      node013   idle      381144      64       16       gpu:rtx_2080:0(IDX:N/A)     0/64/0/64
-      node014   idle      101325      64       16       gpu:rtx_2080:0(IDX:N/A)     0/64/0/64
-      node016   idle      35153       64       16       gpu:rtx_2080:0(IDX:N/A)     0/64/0/64
+     ┏━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+     ┃ Hostname ┃ Status ┃ Free Memory ┃ CPUs ┃ Cores ┃ GPUs                    ┃ CPU Status ┃
+     ┡━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+     │ node012  │ mixed  │ 255511      │ 64   │ 16    │ gpu:rtx_2080:1(IDX:0)   │ 32/32/0/64 │
+     │ node009  │ mixed  │ 339408      │ 64   │ 16    │ gpu:rtx_2080:1(IDX:0)   │ 2/62/0/64  │
+     │ node010  │ idle   │ 332082      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     │ node011  │ idle   │ 357553      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     │ node013  │ idle   │ 381159      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     │ node014  │ idle   │ 101290      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     │ node015  │ idle   │ 46963       │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     │ node016  │ idle   │ 35143       │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     └──────────┴────────┴─────────────┴──────┴───────┴─────────────────────────┴────────────┘
 
 At a glance, I'm seeing that I could grab an instance with, say 32 cpus and 8 gpus, on ``node010``, which is idle. The far right hand column is partitioned into A: Allocated, I: idle, O: other, and T: total. 
-The values under ``GRES_USED`` can be interpreted as follows, the integer after the second colon indicates the number of GPUs already in use. 
+The values under ``GPUs`` can be interpreted as follows, the integer after the second colon indicates the number of GPUs already in use. 
 
 A natural thing to do here would be to alias this call into something a bit quicker to use, so that you can pull down this information at a glance each time you login. 
 
@@ -57,13 +60,6 @@ Following the example from above, where I see that ``node010`` is available, I c
 .. code-block:: console
 
    $ python3 -m lipsutils.ionic_launch node=node010 cpus=32 gpus=8 
-
-   Requested resources
-   -------------------
-   gpus: 8
-   cpus: 32
-   memory: 64 GB
-   nodename: node010
 
    salloc: Granted job allocation 22918747
    salloc: Waiting for resource configuration
