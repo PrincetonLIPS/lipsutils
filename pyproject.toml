@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"] 
+build-backend = "hatchling.build"
+
+[project]
+name = "lipsutils" 
+version = "0.0.0" 
+authors = [
+	{ name="Nick Richardson", email="njkrichardson@princeton.edu" }, 
+]
+description = "Internal utilities shared by the Princeton LIPS group."
+readme = "README.md" 
+license = "MIT"
+requires-python = ">=3.8" 
+classifiers = [
+	"Intended Audience :: Science/Research",
+	"Topic :: Scientific/Engineering :: Artificial Intelligence",
+	"Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+keywords=[
+	"optimization", 
+	"jax", 
+	"implicit differentiation", 
+	"topology optimization", 
+	"computational geometry"
+]
+dependencies = [
+	"rich", 
+	"tyro", 
+]
+
+[project.optional-dependencies]
+jax = [
+	"chex>=0.1.87",
+	"jax>=0.4.30",
+	"jaxlib>=0.4.30",
+	"ml_dtypes>=0.5.0", 
+	"numpy>=2.0.0", 
+	"opt_einsum>=3.4.0", 
+	"scipy>=1.13.1", 
+]
+
+[project.urls]
+Homepage = ""
+Issues = ""
+
+[tool.hatch.build.targest.sdist]
+only-include = ["src"]
