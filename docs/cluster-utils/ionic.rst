@@ -20,18 +20,25 @@ Below I show an example of the usage of this utility and its output.
 .. code-block:: console 
 
    $ python3 -m lipsutils.ionic_info 
-     ┏━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
-     ┃ Hostname ┃ Status ┃ Free Memory ┃ CPUs ┃ Cores ┃ GPUs                    ┃ CPU Status ┃
-     ┡━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
-     │ node012  │ mixed  │ 255511      │ 64   │ 16    │ gpu:rtx_2080:1(IDX:0)   │ 32/32/0/64 │
-     │ node009  │ mixed  │ 339408      │ 64   │ 16    │ gpu:rtx_2080:1(IDX:0)   │ 2/62/0/64  │
-     │ node010  │ idle   │ 332082      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     │ node011  │ idle   │ 357553      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     │ node013  │ idle   │ 381159      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     │ node014  │ idle   │ 101290      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     │ node015  │ idle   │ 46963       │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     │ node016  │ idle   │ 35143       │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     └──────────┴────────┴─────────────┴──────┴───────┴─────────────────────────┴────────────┘
+    ┏━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┓
+    ┃ Hostname ┃ Status ┃ Free Memory ┃ CPUs ┃ Cores ┃ GPUs                 ┃ CPU Status         ┃
+    ┡━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━┩
+    │ node012  │ mixed  │ 252.8 GB    │ 64   │ 16    │ In use: 1 (rtx_2080) │ 32 of 64 allocated │
+    │ node015  │ mixed  │ 45.9 GB     │ 64   │ 16    │ In use: 8 (rtx_2080) │ 32 of 64 allocated │
+    │ node016  │ mixed  │ 28.4 GB     │ 64   │ 16    │ In use: 2 (rtx_2080) │ 4 of 64 allocated  │
+    │ node009  │ idle   │ 333.4 GB    │ 64   │ 16    │ In use: 0 (rtx_2080) │ 0 of 64 allocated  │
+    │ node010  │ idle   │ 324.3 GB    │ 64   │ 16    │ In use: 0 (rtx_2080) │ 0 of 64 allocated  │
+    │ node011  │ idle   │ 349.1 GB    │ 64   │ 16    │ In use: 0 (rtx_2080) │ 0 of 64 allocated  │
+    │ node013  │ idle   │ 372.2 GB    │ 64   │ 16    │ In use: 0 (rtx_2080) │ 0 of 64 allocated  │
+    │ node014  │ idle   │ 98.9 GB     │ 64   │ 16    │ In use: 0 (rtx_2080) │ 0 of 64 allocated  │
+    └──────────┴────────┴─────────────┴──────┴───────┴──────────────────────┴────────────────────┘
+
+Or in color: 
+
+.. image:: ../media/images/ionic_info.png
+   :width: 700 
+   :align: center
+   :alt: Ionic info screenshot.
 
 At a glance, I'm seeing that I could grab an instance with, say 32 cpus and 8 gpus, on ``node010``, which is idle. The far right hand column is partitioned into A: Allocated, I: idle, O: other, and T: total. 
 The values under ``GPUs`` can be interpreted as follows, the integer after the second colon indicates the number of GPUs already in use. 
