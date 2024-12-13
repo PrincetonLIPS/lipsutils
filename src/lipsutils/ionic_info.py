@@ -7,7 +7,7 @@ from rich.console import Console
 from rich.table import Table
 import tyro
 
-from lipstils.fmt_io import human_bytes_str
+from lipsutils.fmt_io import human_bytes_str
 
 # Valid on Ionic as of 12/12/2024
 SINFO_BIN = Path("/usr/bin/sinfo")
