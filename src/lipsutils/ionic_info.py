@@ -21,6 +21,26 @@ class CLIArgs:
 
 
 def main(config: CLIArgs):
+    """Basic driver for a call to the sinfo binary on Ionic. Uses Rich formatting to produce a simplified 
+    table of the results on the lips partition. 
+
+    Example
+    -------
+    >>> python3 -m lipsutils.ionic_info 
+     ┏━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+     ┃ Hostname ┃ Status ┃ Free Memory ┃ CPUs ┃ Cores ┃ GPUs                    ┃ CPU Status ┃
+     ┡━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+     │ node012  │ mixed  │ 255511      │ 64   │ 16    │ gpu:rtx_2080:1(IDX:0)   │ 32/32/0/64 │
+     │ node009  │ mixed  │ 339408      │ 64   │ 16    │ gpu:rtx_2080:1(IDX:0)   │ 2/62/0/64  │
+     │ node010  │ idle   │ 332082      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     │ node011  │ idle   │ 357553      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     │ node013  │ idle   │ 381159      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     │ node014  │ idle   │ 101290      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     │ node015  │ idle   │ 46963       │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     │ node016  │ idle   │ 35143       │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
+     └──────────┴────────┴─────────────┴──────┴───────┴─────────────────────────┴────────────┘
+    
+    """
     if not SINFO_BIN.exists():
         raise FileNotFoundError(f"Did not find sinfo binary at {str(SINFO_BIN)}...")
 

@@ -22,6 +22,27 @@ def validate_args(config: CLIArgs):
         raise ValueError(f"Must request a number of gpus between 0 and 8 inclusive, but asked for {config.gpus}")
 
 def main(config: CLIArgs): 
+    """Basic driver for a call to salloc to request an interactive reservation on our lips-interactive daily 
+    flex reservation. 
+
+    Parameters
+    ----------
+    config.node : str 
+        The node identifier (see `lipsutils.ionic_info.main`)
+    config.cpus : int 
+        Number of cpus to request for the reservation (default, 1). 
+    config.memory : str 
+        String memory request (default: "32G")
+    config.gpus : int 
+        Non-negative number of gpus to request for the reservation (default, 0).
+
+    Example
+    -------
+    >>> python3 -m lipsutils.ionic_launch node=node010, cpus=32, gpus=8
+    salloc: Granted job allocation 22918747
+    salloc: Waiting for resource configuration
+    salloc: Nodes node010 are ready for job
+    """
     validate_args(config)
     args = [
         "salloc", 

@@ -19,7 +19,13 @@ except OSError:
 
 
 class PythonProfiler:
-    """A barebones Python profiling context manager."""
+    """A barebones Python profiling context manager.
+
+    Example
+    -------
+    >>> with PythonProfiler("f"): 
+        _ = f()
+    """
 
     def __init__(self, identifier: str, **kwargs):
         self.identifier: str = identifier
@@ -53,6 +59,15 @@ def cuda_profiler_stop():
 
 
 class CudaProfiler:
+    """Cuda profiling context manager, for use under `nsys` and `ncu`. 
+
+    Example
+    -------
+    >>> with CudaProfiler("gradient fn"): 
+        _ = jax.grad(f)(x) 
+    """
+    def f(): 
+        pass 
     def __init__(self, identifier: Optional[str] = None):
         if not CUDA_AVAILABLE:
             raise RuntimeError("Cuda runtime is not available!")
@@ -71,15 +86,24 @@ def cuda_profiler(f: callable):
     """Wrapper intended to decorate functions that one wants to run under
     the supervision of the CUDA runtime profiler. Uses functools.wraps to carry over
     method name, docstring, args, etc.
+
     Parameters
     ----------
     f: callable
         callable to be profiled.
+
     Returns
     -------
     wrap: callable
         wrapped version of `f` which will run within a CUDA profiling fence and
         otherwise behaves identically.
+
+    Example
+    -------
+    >>> 
+    @cuda_profiler 
+    def f(): 
+        pass 
     """
 
     @functools.wraps(f)
