@@ -43,8 +43,7 @@ jax = [
 ]
 
 [project.urls]
-Homepage = ""
-Issues = ""
+Homepage = "https://github.com/PrincetonLIPS/lipsutils"
 
 [tool.hatch.build.targest.sdist]
 only-include = ["src"]

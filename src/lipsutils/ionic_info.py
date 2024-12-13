@@ -7,6 +7,8 @@ from rich.console import Console
 from rich.table import Table
 import tyro
 
+from lipstils.fmt_io import human_bytes_str
+
 # Valid on Ionic as of 12/12/2024
 SINFO_BIN = Path("/usr/bin/sinfo")
 LIPS_FLEX_NODESPEC: str = "node009,node01[0-6]"
@@ -21,25 +23,25 @@ class CLIArgs:
 
 
 def main(config: CLIArgs):
-    """Basic driver for a call to the sinfo binary on Ionic. Uses Rich formatting to produce a simplified 
-    table of the results on the lips partition. 
+    """Basic driver for a call to the sinfo binary on Ionic. Uses Rich formatting to produce a simplified
+    table of the results on the lips partition.
 
     Example
     -------
-    >>> python3 -m lipsutils.ionic_info 
-     ┏━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
-     ┃ Hostname ┃ Status ┃ Free Memory ┃ CPUs ┃ Cores ┃ GPUs                    ┃ CPU Status ┃
-     ┡━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
-     │ node012  │ mixed  │ 255511      │ 64   │ 16    │ gpu:rtx_2080:1(IDX:0)   │ 32/32/0/64 │
-     │ node009  │ mixed  │ 339408      │ 64   │ 16    │ gpu:rtx_2080:1(IDX:0)   │ 2/62/0/64  │
-     │ node010  │ idle   │ 332082      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     │ node011  │ idle   │ 357553      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     │ node013  │ idle   │ 381159      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     │ node014  │ idle   │ 101290      │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     │ node015  │ idle   │ 46963       │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     │ node016  │ idle   │ 35143       │ 64   │ 16    │ gpu:rtx_2080:0(IDX:N/A) │ 0/64/0/64  │
-     └──────────┴────────┴─────────────┴──────┴───────┴─────────────────────────┴────────────┘
-    
+    >>> python3 -m lipsutils.ionic_info
+    ┏━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┓
+    ┃ Hostname ┃ Status ┃ Free Memory ┃ CPUs ┃ Cores ┃ GPUs                 ┃ CPU Status         ┃
+    ┡━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━┩
+    │ node012  │ mixed  │ 252.8 GB    │ 64   │ 16    │ In use: 1 (rtx_2080) │ 32 of 64 allocated │
+    │ node015  │ mixed  │ 45.9 GB     │ 64   │ 16    │ In use: 8 (rtx_2080) │ 32 of 64 allocated │
+    │ node016  │ mixed  │ 28.4 GB     │ 64   │ 16    │ In use: 2 (rtx_2080) │ 4 of 64 allocated  │
+    │ node009  │ idle   │ 333.4 GB    │ 64   │ 16    │ In use: 0 (rtx_2080) │ 0 of 64 allocated  │
+    │ node010  │ idle   │ 324.3 GB    │ 64   │ 16    │ In use: 0 (rtx_2080) │ 0 of 64 allocated  │
+    │ node011  │ idle   │ 349.1 GB    │ 64   │ 16    │ In use: 0 (rtx_2080) │ 0 of 64 allocated  │
+    │ node013  │ idle   │ 372.2 GB    │ 64   │ 16    │ In use: 0 (rtx_2080) │ 0 of 64 allocated  │
+    │ node014  │ idle   │ 98.9 GB     │ 64   │ 16    │ In use: 0 (rtx_2080) │ 0 of 64 allocated  │
+    └──────────┴────────┴─────────────┴──────┴───────┴──────────────────────┴────────────────────┘
+
     """
     if not SINFO_BIN.exists():
         raise FileNotFoundError(f"Did not find sinfo binary at {str(SINFO_BIN)}...")
@@ -93,17 +95,34 @@ def main(config: CLIArgs):
             status = f"[orange1]{status}[/orange1]"
 
         num_gpus_used = int(gres.split(":")[2][0])
+        gpu_model: str = gres.split(":")[1]
+
         if num_gpus_used == 0:
-            gres = f"[green]{gres}[/green]"
+            gres = f"[green]In use: {num_gpus_used} ({gpu_model})[/green]"
         elif num_gpus_used < 8:
-            gres = f"[orange1]{gres}[/orange1]"
+            gres = f"[orange1]In use: {num_gpus_used} ({gpu_model})[/orange1]"
         else:
-            gres = f"[red]{gres}[/red]"
+            gres = f"[red]In use: {num_gpus_used} ({gpu_model})[red]"
+
+        free_mem = human_bytes_str(int(free_mem) * int(2**20))
+
+        cpus_allocated: int = int(cpu_status.split("/")[0])
+        cpus_total: int = int(cpu_status.split("/")[3])
+
+        cpu_allocation_proportion: float = float(cpus_allocated) / cpus_total
+
+        if cpu_allocation_proportion < 0.25:
+            cpu_status = f"[green]{cpus_allocated} of {cpus_total} allocated[/green]"
+        elif cpu_allocation_proportion < 0.75:
+            cpu_status = (
+                f"[orange1]{cpus_allocated} of {cpus_total} allocated[/orange1]"
+            )
+        else:
+            cpu_status = f"[red]{cpus_allocated} of {cpus_total} allocated[/red]"
 
         data = (hostname, status, free_mem, cpus, cores, gres, cpu_status)
 
         table.add_row(*data)
-
     console = Console()
     console.print(table)
 
