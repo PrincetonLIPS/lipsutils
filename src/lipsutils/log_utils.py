@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from lipsutils.utils import get_now_str
+from lipsutils.fmt_io import get_now_str
 
 
 def setup_logger(

@@ -31,21 +31,22 @@ def main(config: CLIArgs):
             f"--nodes={config.nodespec}",
             "--exact",
             f"--Format={FMT_SPEC}",
-        ], stdout=subprocess.PIPE
+        ],
+        stdout=subprocess.PIPE,
     )
-    result: str = result.stdout.decode('utf-8')
+    result: str = result.stdout.decode("utf-8")
 
-    # rows 
-    hostnames: list[str] = [] 
-    status: list[str] = [] 
-    free_mem: list[str] = [] 
-    cpus: list[str] = [] 
-    cores: list[str] = [] 
-    gres: list[str] = [] 
-    cpu_status: list[str] = [] 
+    # rows
+    hostnames: list[str] = []
+    status: list[str] = []
+    free_mem: list[str] = []
+    cpus: list[str] = []
+    cores: list[str] = []
+    gres: list[str] = []
+    cpu_status: list[str] = []
 
-    for entry in result.split("\n")[1:-1]: 
-        fields = entry.split() 
+    for entry in result.split("\n")[1:-1]:
+        fields = entry.split()
         hostnames.append(fields[0])
         status.append(fields[1])
         free_mem.append(fields[3])
@@ -54,41 +55,37 @@ def main(config: CLIArgs):
         gres.append(fields[9])
         cpu_status.append(fields[10])
 
-
     table = Table(title="LIPS Partition Information")
-    table.add_column("Hostname") 
-    table.add_column("Status") 
-    table.add_column("Free Memory") 
-    table.add_column("CPUs") 
-    table.add_column("Cores") 
-    table.add_column("GPUs") 
-    table.add_column("CPU Status") 
+    table.add_column("Hostname")
+    table.add_column("Status")
+    table.add_column("Free Memory")
+    table.add_column("CPUs")
+    table.add_column("Cores")
+    table.add_column("GPUs")
+    table.add_column("CPU Status")
 
-    for data in zip(hostnames, status, free_mem, cpus, cores, gres, cpu_status): 
-        hostname, status, free_mem, cpus, cores, gres, cpu_status = data 
+    for data in zip(hostnames, status, free_mem, cpus, cores, gres, cpu_status):
+        hostname, status, free_mem, cpus, cores, gres, cpu_status = data
 
-        if status == "idle": 
+        if status == "idle":
             status = f"[green]{status}[/green]"
-        elif status == "mixed": 
+        elif status == "mixed":
             status = f"[orange1]{status}[/orange1]"
 
-
-        num_gpus_used = int(gres.split(":")[2][0]) 
-        if num_gpus_used == 0: 
+        num_gpus_used = int(gres.split(":")[2][0])
+        if num_gpus_used == 0:
             gres = f"[green]{gres}[/green]"
-        elif num_gpus_used < 8: 
+        elif num_gpus_used < 8:
             gres = f"[orange1]{gres}[/orange1]"
-        else: 
+        else:
             gres = f"[red]{gres}[/red]"
 
-        data = (hostname, status, free_mem, cpus, cores, gres, cpu_status) 
+        data = (hostname, status, free_mem, cpus, cores, gres, cpu_status)
 
         table.add_row(*data)
 
     console = Console()
     console.print(table)
-
-
 
 
 if __name__ == "__main__":

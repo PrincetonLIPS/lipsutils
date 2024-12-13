@@ -1,4 +1,24 @@
+"""String formatting and basic I/O utilities."""
+
 import datetime
+from pathlib import Path
+import pickle
+from typing import Any
+
+
+def serialize(payload: Any, location: Path) -> None:
+    location: Path = Path(location) if (not isinstance(location, Path)) else location
+    if location.stem != ".pkl":
+        location = location.with_suffix(".pkl")
+
+    with open(location, "wb") as handle:
+        pickle.dump(payload, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def deserialize(location: Path) -> Any:
+    with open(location, "rb") as handle:
+        result = pickle.load(handle)
+    return result
 
 
 def get_now_str() -> str:
@@ -64,3 +84,11 @@ def human_seconds_str(seconds: int) -> str:
         seconds *= 1000
 
     return f"{int(seconds)} femto"
+
+
+__all__ = [
+    "human_bytes_str",
+    "human_flops_str",
+    "human_seconds_str",
+    "human_length_str",
+]
