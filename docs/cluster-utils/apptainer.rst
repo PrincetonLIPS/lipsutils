@@ -21,7 +21,7 @@ Our ``Dockerfile`` is shown below:
     FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04
     LABEL maintainer="njkrichardson@princeton.edu" 
 
-    COPY ./requirements.txt /requirements.txt
+    COPY ./build/requirements.txt /requirements.txt
 
     WORKDIR /docker-practice
     ENV PYTHONPATH=/docker-practice:/docker-practice/src
@@ -42,26 +42,87 @@ Below I show the translation of this ``Dockerfile`` into an Apptainer ``build.de
 
 .. code-block:: console 
 
-    # syntax=docker/dockerfile:1
+    Bootstrap: docker
+    From: nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04
 
-    FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04
-    LABEL maintainer="njkrichardson@princeton.edu" 
+    %files
+        ./build/requirements.txt /requirements.txt
 
-    COPY ./requirements.txt /requirements.txt
+    %post
+        apt-get -y update
+        DEBIAN_FRONTEND=noninteractive apt-get install --yes \
+            build-essential \
+            python3-pip
 
-    WORKDIR /docker-practice
-    ENV PYTHONPATH=/docker-practice:/docker-practice/src
+        # install python dependencies
+        pip install -r /requirements.txt \
+        && rm -f /requirements.txt
 
-    # ubuntu dependencies 
-    RUN --mount=type=cache,target=/var/cache/apt \
-    apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --yes \
-        build-essential \
-        python3-pip
+We can see that these are almost identical. 
+It's important to use the ``Bootstrap: docker`` directive if you want to use the same base image as the 
+Docker image. 
 
-    # install python dependencies 
-    RUN pip install -r /requirements.txt \
-    && rm -f /requirements.txt 
+.. code-block:: console 
 
-    CMD ["/bin/bash"]
+    Bootstrap: docker
+    From: nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04
+
+We then use a ``%files`` block to execute our copy operations, which mirror the Docker ``COPY`` instruction in format (host source, destination).
+
+.. code-block:: console 
+
+    %files
+        ./build/requirements.txt /requirements.txt
+
+Finally, our ``%post`` section executes the analagous ``RUN`` instructions as in our Dockerfile. 
+
+.. code-block:: console 
+
+    %post
+        apt-get -y update
+        DEBIAN_FRONTEND=noninteractive apt-get install --yes \
+            build-essential \
+            python3-pip
+
+        # install python dependencies
+        pip install -r /requirements.txt \
+        && rm -f /requirements.txt
+
+I would then save this file as ``build/build.def``, for instance, and execute: 
+
+.. code-block:: console 
+
+    (ionic) $ apptainer build build/dp.sif build/build.def 
+
+Which would then build the image. 
+
+Apptainer Environment 
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Unlike Docker, where I explicitly bind environment variables at build time, with Apptainer I have to use a slightly different approach because of the difference in their 
+underlying architecture with respect to filesystem visibility. 
+
+In :doc:`../tutorials/docker` I described explicitly binding our working directory, and the ``PYTHONPATH``, for instance, at build time. 
+With Apptainer, containers by default have visibility over host environment variables, so to better isolate my containers from the host, I run all Apptainer commands 
+with ``apptainer exec -e --pwd /docker_practice`` which cleans the environment before running the container, and sets our working directory. 
+
+The way I configure binding (analagous to ``docker run -v <host_path>:<container_path>``) and environemnt variables is maintaining a separate file with this confiruation. 
+For instance, let's say I have a ``.env`` with the following contents. 
+
+.. code-block:: console 
+
+    (ionic) $ cat .env 
+
+    export APPTAINERENV_PYTHONPATH="/docker_practice:/docker_practice/src"
+    export APPTAINER_BINDPATH="$(pwd):/docker_practice"
+
+Then I would simply ``source .env`` before running ``apptainer exec -e --pwd /docker_practice ./build/dp.sif python3 src/example.py`` which is analagous to 
+how things worked in Docker. 
 
 
+Apptainer Runtime Usage 
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Using an apptainer image at runtime is slightly different, rather than starting the container in detached mode in the background, we typically simply execute single commands using 
+``apptainer exec``, for example at the payload of a Slurm batch script (see :doc:`slurm` for details). 
+For GPU usage, be sure to provide the ``--nv`` flag. 
