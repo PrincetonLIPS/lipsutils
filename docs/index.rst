@@ -6,6 +6,12 @@ lab hosts (LIPS Private Compute or LPC), and generic Python utilities that seem 
 research projects. 
 In addition, we provide a number of tutorials that cover common challenges in research. 
 
+To use our Python utilities, simply install the package with: 
+
+.. code-block:: console 
+
+   $ pip install lipsutils
+
 .. toctree::
    :maxdepth: 1
    :caption: Princeton Research Clusters
@@ -31,6 +37,8 @@ In addition, we provide a number of tutorials that cover common challenges in re
    :caption: Python Utilities 
 
    python-utils/profiling
+   python-utils/string_formatting
+   python-utils/api
 
 .. toctree:: 
    :maxdepth: 1
