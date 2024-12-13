@@ -89,6 +89,10 @@ For instance, suppose the workload script looks like:
        step_sizes: np.ndarray = np.logspace(-6, -2, num=50)
        train_net(step_sizes[args.task_id])
 
+   if __name__=="__main__": 
+      args = parser.parse_args()
+      main(args)
+
 We use the provided task id determine which step size to train the network with. The launch script could look as follows: 
 
 .. code-block:: console 
