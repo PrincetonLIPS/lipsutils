@@ -12,39 +12,15 @@ I don't intend to cover tools in any specific detail, as the tools themselves ar
 Instead, I think what's more useful is to outline the debugging/optimization methodology, which is far more valuable, in my opinion, and surprisingly lacking for
 many researchers. 
 
-Philosophy
-----------
-
-Debugging and optimization are a balance of a systematic, rigorous, and unbiased engineering attitude, with the "art" of intuition and educated guesses. 
-This is one feature of the exercise that makes it very difficult. 
-Very often one finds themselves making assumptions about what's going on that are not valid, which can slow or even be fatal to a debugging/optimization exercise. 
-When I'm struggling to find an error or improve the performance of some code, I always try to back up and question every assumption I'm making, no matter my degree of confidence. 
-At this point I think the major mindset shift that has happened in gaining experience in this domain is I'm far *less* confident in my initial assumptions/guesses than what I observe in my peers who might 
-have less experience. 
-This is a strange skill to develop, because on the one hand, as you gain experience, your hypotheses do become more accurate on average, but you also need to develop an extreme 
-objectivity in parallel to avoid being lulled down rabbit holes by trusting your intuition too much. 
-
-Improvement in this area is ultimately driven by building knowledge and experience. 
-You do need *some* understanding of how the computer works and what limits its performance in various settings. 
-You do need *some* understanding of your programming tools and what your code does at a low level. 
-It is possible to extract very good results, though, with relatively simply mental models of both the hardware and the programs, provided you apply the right 
-methods and techniques. 
-These systems are very, very complicated. 
-As a final word of warning, it is a common mistake to demean these activities as "pedestrian" or "un-intellectual". 
-Engineering is different from, say, mathematics, in an aesthetic sense. 
-It is much messier and less cohesive, which can be frustrating for the theoretician to accept. 
-But there is much to learn here, and you will gain the best results in the long term if you engage these areas (computer engineering and architecture, operating systems, programming languages, 
-software systems and user level tooling) with the same effort as you would any other complicated subject. 
-
 Concepts
 --------
 
 I generally consider debugging to be the activity of reducing some observed deviation between my mental model/intended behavior or the code, and the actual/observed 
 behavior of the code. 
 Optimization is the exercise of improving some measured performance metric of the code, for example the wall-clock execution time or the memory footprint. 
-Generally though, these often blur into one another. 
-As you become more performance-atuned and sharpen your mental expectations of the capabilities of the hardware and the inherent algorithmic complexity of your application, you 
-often find yourself thinking something like "this should be much faster" or "there's no way we should be out of memory here". 
+In practice, these often blur into one another. 
+As you become more experienced and calibrate your expectations around the hardware capabilities and the inherent algorithmic complexity of your application, you 
+often find yourself slipping into normative thinking like "this *should* be much faster" or "there's no way we should be out of memory here". 
 
 Methods
 -------
@@ -73,7 +49,11 @@ A Barebones EveryDay Setup
 
 What I use essentially anytime I'm debugging code or starting an optimization exercise is a three pane split in my terminal emulator (I use Iterm2 on MacOS). 
 
-NICK TODO add image 
+
+.. image:: ../media/images/everyday_setup.png
+   :width: 700 
+   :align: center
+   :alt: Ionic info screenshot.
 
 On the left hand pane I'm running the code from the Python debugger (I use ipdb specifically with vim motions). 
 On the right hand panes, I reserve the top for `NVTOP <https://github.com/Syllo/nvtop>`_ to monitor GPU activity in real time with a nice interface, and on the bottom 
@@ -82,7 +62,13 @@ application specific scenario, I might have something else running.
 
 For instance, below I'm debugging a Jax application, so I'm using `jax-smi <https://github.com/ayaka14732/jax-smi>`_ to monitor the outstanding data buffers and compilation cache 
 buffers. 
-What I'm doing is: 
+
+.. image:: ../media/images/everyday_setup_jaxsmi.png
+   :width: 700 
+   :align: center
+   :alt: Ionic info screenshot.
+
+What I'm doing in terms of methodology is: 
 
 	1. Developing some expectations/hypotheses as to what's going on. In debugging, this might mean guesses as to what components of the code I can ignore/assume to be working. In optimization, this might mean guesses as to where in the code the hotspots exist. 
 	2. Gather data/evidence to refine these expectations. For instance, I might step to the next line of code, and watch what buffers are allocated (do those match my estimates?) and what the CPU/GPU activity looks like. I'm also estimating how long I think each line of code will take to run (roughly), and verifying that. This is where I adjudicate my hypotheses and correct errors in my mental model. 
@@ -130,21 +116,29 @@ To profile the entire application and save the output, I’ll use:
 
 .. code-block:: console
 
-		$ nsys --output=baseline.out python3 demo.py
+		$ nsys profile --output=baseline.out python3 demo.py
 
 This generates a report file ``baseline.out``, which I ``rsync`` back to my local host, I can open it up using the local Nsight Systems tool to interrogate the application. 
 
 
-TODO Nick add image
+.. image:: ../media/images/baseline_nsys.png
+   :width: 700 
+   :align: center
+   :alt: Ionic info screenshot.
 
 Notice the bottom partition is displaying the Stats System View, which contains aggregate statistics like API calls, kernel launches, and memory system interactions. This is similar to what you’d get on the command-line using ``nvprof``. 
 
 In the upper partition by default we see the Timeline view, which shows time series of the execution behavior of the various “Processes” shown on the lefthand side. For example, we can see the CPython interpreter system calls as it handles module import and setup for its overhead. 
 
-The CUDA HW row shows a speckling of small kernel executions in the right half of the time series. We can zoom in on one of these operations (note the difference in timescale between the first image and this one) and look at an individual kernel execution, for example this ``dot3`` kernel executed in about 2 us, and we can see information like its launch configuration (in terms of grids, blocks, and threads per block), and stream identity (to name a few). 
+The CUDA HW row shows a speckling of small kernel executions in the right half of the time series. We can zoom in on one of these operations (note the difference in timescale between the first image and this one) and look at an individual kernel execution, for example this wrapped dot kernel executed in about 2 us, and we can see information like its launch configuration (in terms of grids, blocks, and threads per block), and stream identity (to name a few). 
 
+.. image:: ../media/images/baseline_zoomed_nsys.png
+   :width: 700 
+   :align: center
+   :alt: Ionic info screenshot.
 
-TODO Nick add image
+I see this kernel launched a single thread block with 4 threads, which makes sense to me for the first 2 by 2 matmul (one thread per output element).
+It's data like this that can be very useful to play around with to develop your mental model. 
 
 Restricting Capture Range
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -166,7 +160,10 @@ In this case, you can use the ``liputils.profiling`` module which contains a few
 
 I’ll now call ``nsys`` with the ``--capture-range`` flag to indicate that it should look for these delimiter directives. ``nsys profile --output=delimited.out --capture-range cudaProfilerApi python3 demo.py``. 
 
-TODO Nick add image 
+.. image:: ../media/images/baseline_nsys_delimited.png
+   :width: 700 
+   :align: center
+   :alt: Ionic info screenshot.
 
 You can see above our captured trace only contains the loop executions. In this case the improvement is marginal (we reclaim maybe half of the trace that was wasted before) but in more complicated applications this is crucial. 
 You want to reduce noise to simplify the problem. 
@@ -186,25 +183,29 @@ In this case I’m not actually using any of these libraries so the profiling ou
 Annotating Regions with NVTX
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A very useful tool is the Nvidia Tools Extension Library (NVTX). NVTX provides cross-platform features to add marks and annotations to the profiling telemetry that it compatible with Nsight Systems. After installing the library (using ``mamba``, ``conda``, or ``pip`` for example), you can use it as follows: 
+A very useful tool is the Nvidia Tools Extension Library (NVTX). NVTX provides cross-platform features to add marks and annotations to the profiling telemetry that it compatible with Nsight Systems. 
+After installing the library, you can use it by simply providing a string to the context manager: 
 
 .. code-block:: python
 
-	import jax.numpy as np 
-	import nvtx 
+	import jax.numpy as np
+
+	import nvtx
 	from lipsutils.profiling import CudaProfiler
-		 
+
 	with CudaProfiler():
-	    nvtx.mark(message="About to start the loop!") 
-	    for size in [2**i for i in range(1, 10)]: 
-	        A: np.ndarray = np.arange(size**2).reshape(size, size) 
-	        B: np.ndarray = np.arange(size**2).reshape(size, size)
-	        with nvtx.annotate(message=f"Matrix size {size}", color="green"): 
-	            C: np.ndarray = A @ B
+	    for size in [2**i for i in range(1, 10)]:
+	        A: np.ndarray = np.arange(size**2).reshape(size, size)
+		B: np.ndarray = np.arange(size**2).reshape(size, size)
+		with nvtx.annotate(message=f"Matrix size: {size}", color="green"):
+		    C: np.ndarray = A @ B
 
-TODO Nick add image
+.. image:: ../media/images/baseline_nsys_nvtx.png
+   :width: 700 
+   :align: center
+   :alt: Ionic info screenshot.
 
-This adds helpful annotations as you can see above. 
+This adds helpful annotations as you can see above, which I use extensively in my debugging or optimization exercises. 
 
 You can also use ``nvtx.annotate`` as a decorator, like this: 
 
@@ -225,3 +226,27 @@ To capture memory usage just add the ``--cuda-memory-usage true`` option, which 
 
 		Google’s XLA compiler infrastructure uses a rather aggressive memory allocator, which by default allocates around 90% of the available GPU memory. Even if you disable this with ``XLA_PYTHON_CLIENT_ALLOCATOR=platform``, the allocator will request double its current allocation each time it grows near the limit of its current allocation. This is important to understand when debugging applications using XLA.
 
+
+Philosophy
+----------
+
+Debugging and optimization are a balance of a systematic, rigorous, and unbiased engineering attitude, with the "art" of intuition and educated guesses. 
+This is one feature of the exercise that makes it very difficult. 
+Very often one finds themselves making assumptions about what's going on that are not valid, which can slow or even be fatal to a debugging/optimization exercise. 
+When I'm struggling to find an error or improve the performance of some code, I always try to back up and question every assumption I'm making, no matter my degree of confidence. 
+At this point I think the major mindset shift that has happened in gaining experience in this domain is I'm far *less* confident in my initial assumptions/guesses than what I observe in my peers who might 
+have less experience. 
+This is a strange skill to develop, because on the one hand, as you gain experience, your hypotheses do become more accurate on average, but you also need to develop an extreme 
+objectivity in parallel to avoid being lulled down rabbit holes by trusting your intuition too much. 
+
+Improvement in this area is ultimately driven by building knowledge and experience. 
+You do need *some* understanding of how the computer works and what limits its performance in various settings. 
+You do need *some* understanding of your programming tools and what your code does at a low level. 
+It is possible to extract very good results, though, with relatively simply mental models of both the hardware and the programs, provided you apply the right 
+methods and techniques. 
+These systems are very, very complicated. 
+As a final word of warning, it is a common mistake to demean these activities as "pedestrian" or "un-intellectual". 
+Engineering is different from, say, mathematics, in an aesthetic sense. 
+It is much messier and less cohesive, which can be frustrating for the theoretician to accept. 
+But there is much to learn here, and you will gain the best results in the long term if you engage these areas (computer engineering and architecture, operating systems, programming languages, 
+software systems and user level tooling) with the same effort as you would any other complicated subject. 
