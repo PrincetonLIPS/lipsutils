@@ -210,7 +210,7 @@ This is the name expected by the docker commandline tools. Here are the contents
 
     # syntax=docker/dockerfile:1
 
-    FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04
+    FROM ubuntu:22.04
     LABEL maintainer="njkrichardson@princeton.edu" 
 
     COPY ./requirements.txt /requirements.txt
