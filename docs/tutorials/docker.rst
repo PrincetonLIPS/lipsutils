@@ -215,8 +215,8 @@ This is the name expected by the docker commandline tools. Here are the contents
 
     COPY ./requirements.txt /requirements.txt
 
-    WORKDIR /docker-practice
-    ENV PYTHONPATH=/docker-practice:/docker-practice/src
+    WORKDIR /docker_practice
+    ENV PYTHONPATH=/docker_practice:/docker_practice/src
 
     # ubuntu dependencies 
     RUN --mount=type=cache,target=/var/cache/apt \
@@ -265,8 +265,8 @@ setting the ``PYTHONPATH`` here with the ``ENV`` instruction, we save time runni
 
 .. code-block:: console 
 
-    WORKDIR /docker-practice
-    ENV PYTHONPATH=/docker-practice:/docker-practice/src
+    WORKDIR /docker_practice
+    ENV PYTHONPATH=/docker_practice:/docker_practice/src
 
 The subsequent block configures the base operating system (Ubuntu, in this case) dependencies. At minimum we need Python3, but in other cases we might need other 
 libraries like ``curl``, for instance. 
