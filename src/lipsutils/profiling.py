@@ -13,9 +13,14 @@ try:
     cuda_runtime_path: Path = Path("/usr/local/cuda-12.1/lib64/libcudart.so.12.1.105")
     cuda_runtime = ctypes.CDLL(str(cuda_runtime_path))
     CUDA_AVAILABLE = True
-    import nvtx
+    try: 
+        import nvtx
+        NVTX_AVAILABLE = True
+    except ModuleNotFoundError: 
+        NVTX_AVAILABLE = False
 except OSError:
     CUDA_AVAILABLE = False
+    NVTX_AVAILABLE = False
 
 
 class PythonProfiler:
@@ -74,7 +79,7 @@ class CudaProfiler:
         self.identifier: str = identifier
 
     def __enter__(self):
-        if self.identifier is not None:
+        if self.identifier is not None and NVTX_AVAILABLE:
             nvtx.mark(message=self.identifier)
         cuda_profiler_start()
 
