@@ -21,18 +21,16 @@ A minimal batch script looks something like this:
    #SBATCH --nodes=1
    #SBATCH --ntasks=1
    #SBATCH --cpus-per-task=1
+   #SBATCH --gres=gpu:2
    #SBATCH --mem=64gb
    #SBATCH --output=project_space.out
 
    set -x 
-   apptainer exec -e --pwd /project container_image.sif python3 workload.py
+   apptainer exec --nv -e --pwd /project container_image.sif python3 workload.py
    exit 0
 
-I would save this in a file like ``launch-script`` and make sure its executable:
+I would save this in a file like ``launch.slurm`` (the extension is not required). 
 
-.. code-block:: console
-
-   $ chmod +x launch-script
 
 Walking through the batch file, in the first block we: 
 
@@ -46,11 +44,21 @@ In the second block, we set resource requirements:
  - launch the job on 1 node
  - configure 1 task (this is analagous to the number of processes launched using MPI)
  - configure 1 cpu per task 
+ - configure 2 gpus per task 
  - configure 64GB of memory 
  - configure the slurm output file 
 
-Finally, the "payload" of the job executes a script ``workload.py`` via a container runtime using ``apptainer``, this is how I recommend 
-launching the workload. 
+Finally, the "payload" of the job executes a script ``workload.py`` via a container runtime using ``apptainer``. 
+In a setting like this, I probably sourced an environment file with variables to bind my source code directory (so that the apptainer 
+container can see ``workload.py``). 
+For more detail on how this works check out :doc:`apptainer`. 
+
+I would run this job using the following command: 
+
+.. code-block:: console 
+
+   (ionic) $ sbatch ./launch.slurm 
+
 
 Array Jobs
 ----------
@@ -86,14 +94,16 @@ For instance, suppose the workload script looks like:
        if args.task_id >= args.num_tasks: 
            raise ValueError(f"Got {args.task_id=} but {args.num_tasks=}")
 
-       step_sizes: np.ndarray = np.logspace(-6, -2, num=50)
+       step_sizes: np.ndarray = np.logspace(-6, -2, num=args.num_tasks)
        train_net(step_sizes[args.task_id])
 
    if __name__=="__main__": 
       args = parser.parse_args()
       main(args)
 
-We use the provided task id determine which step size to train the network with. The launch script could look as follows: 
+We use the provided task id determine which step size to train the network with, and have resolution that 
+depends on how many tasks we are able to launch in total. 
+The launch script could look as follows: 
 
 .. code-block:: console 
 
@@ -127,4 +137,6 @@ After submitting a job to the scheduler, you can check the status of your jobs u
 
    $ squeue -u ${USER}
 
-
+Once the job begins, you should depend on your logging to track progress, which highlights the importance of informative logs so that you have a sense 
+for what's going on. 
+You could also use a tool like `Tensorboard <https://www.tensorflow.org/tensorboard>`_ or `wandb <https://wandb.ai/site/>`_. 

@@ -1,12 +1,12 @@
 Interoperating Docker and Apptainer
 ===================================
 
-This page assumes you have a ``Dockerfile`` for an associated docker container which with you've been developing on a local machine or LPC. 
+This page assumes you have a ``Dockerfile`` for an associated docker container with which you've been developing on a local machine or LPC. 
 If you're unfamiliar with docker or containers in general, check out :doc:`../tutorials/docker` for an introduction.
 
 To use the Princeton Research Clusters, you must also develop at least a basic familiarity with `Apptainer <https://apptainer.org/>`_, another containerization platform which is preferred on academic clusters. 
 
-This page describes how to migrate a ``Dockerfile`` to an analagous Apptainer build file, which is used to derive an Apptainer image to run your code on a Princeton research cluster. 
+This page describes how to migrate a ``Dockerfile`` to an analogous Apptainer build file, which is used to derive an Apptainer image to run your code on a Princeton research cluster. 
 
 Example 
 -------
@@ -99,14 +99,14 @@ Which would then build the image.
 Apptainer Environment 
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Unlike Docker, where I explicitly bind environment variables at build time, with Apptainer I have to use a slightly different approach because of the difference in their 
+Unlike Docker, where I explicitly bind environment variables at build time, with Apptainer I use a slightly different approach because of the difference in their 
 underlying architecture with respect to filesystem visibility. 
 
 In :doc:`../tutorials/docker` I described explicitly binding our working directory, and the ``PYTHONPATH``, for instance, at build time. 
 With Apptainer, containers by default have visibility over host environment variables, so to better isolate my containers from the host, I run all Apptainer commands 
 with ``apptainer exec -e --pwd /docker_practice`` which cleans the environment before running the container, and sets our working directory. 
 
-The way I configure binding (analagous to ``docker run -v <host_path>:<container_path>``) and environemnt variables is maintaining a separate file with this confiruation. 
+The way I configure binding (analagous to ``docker run -v <host_path>:<container_path>``) and environment variables is maintaining a separate file with this configuration. 
 For instance, let's say I have a ``.env`` with the following contents. 
 
 .. code-block:: console 
@@ -118,6 +118,7 @@ For instance, let's say I have a ``.env`` with the following contents.
 
 Then I would simply ``source .env`` before running ``apptainer exec -e --pwd /docker_practice ./build/dp.sif python3 src/example.py`` which is analagous to 
 how things worked in Docker. 
+See the `documentation <https://apptainer.org/docs/user/main/environment_and_metadata.html>`_ for further details on how environment variables work with Apptainer. 
 
 
 Apptainer Runtime Usage 
