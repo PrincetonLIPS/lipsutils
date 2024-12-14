@@ -237,12 +237,11 @@ Let's step through this. The first line of the file specifies the Dockerfile syn
     # syntax=docker/dockerfile:1
 
 The next block of two lines specifies the base image with the ``FROM`` directive and a maintainer email. 
-The text after the ``FROM`` directive shows that we're using an image published by Nvidia which contains libraries 
-required for CUDA 12.2 and CUDNN 8, which itself is based on an Ubuntu 22.04 image. 
+The text after the ``FROM`` directive shows that we're using an Ubuntu 22.04 base image. 
 
 .. code-block:: console 
 
-    FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04
+    FROM ubuntu:22.04
     LABEL maintainer="njkrichardson@princeton.edu" 
 
 
@@ -344,7 +343,6 @@ To actually run a command in the container, we can use the following:
 .. code-block:: console 
 
    $ docker exec dp python3 -c "import jax.numpy as np; print(np.ones(3).devices())"
-
    {CpuDevice(id=0)}
 
 As we can see, we are indeed running in our container, where ``python3`` is installed. 
@@ -407,21 +405,14 @@ After these operations my project directory looks like this:
       src/
       Dockerfile
 
-.. note:: 
-
-   One thing I often do to save time and space is I use a different base image in ``Dockerfile.cpu`` and ``Dockerfile``. In this case, for instance, I would change the base 
-   image in ``Dockerfile.cpu`` to be ``ubuntu:22.04``, since I won't need the cuda tools in my CPU image. 
-
-   In some technical sense this could be considered bad form in certain cases, but since I'm using the same base (``ubuntu:22.04``) as that of the GPU-enabled iamage, it will essentially just work.
-
-Finally, we need to change the Jax version to be that which *enables* CUDA usage but doesn't bundle all the CUDA libraries (these libraries are enormous, and we already have them in our image). 
+Finally, we need to change the Jax version to be that which enables CUDA usage. 
 Since I like to maintain a separate CPU build, I again typically make a copy of our requirements at ``build/requirements_gpu.txt`` with the dependencies updated. 
 
 .. code-block:: console 
 
    (zeneba) $ cat ./build/requirements_gpu.txt 
 
-        jax[cuda12_local]==0.4.30
+        jax[cuda12]==0.4.37
 
 This means I also update the requirements file we load in ``docker-practice/Dockerfile`` as follows: 
 
